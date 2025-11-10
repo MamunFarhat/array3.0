@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Array Analyzer (C → HTML/CSS/JS)</title>
+  <style>
+    :root{
+      --bg:#f6f9fc;
+      --card:#ffffff;
+      --accent:#0b74de;
+      --text:#17223b;
+      --muted:#596b86;
+      --success:#2ea44f;
+    }
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg,#eef6ff 0%, #f8fbff 100%);
+      color:var(--text);
+      padding:28px;
+    }
+    .container{
+      max-width:900px;
+      margin:0 auto;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:18px;
+    }
+    h1{
+      margin:0;
+      font-size:20px;
+      color:var(--accent);
+    }
+    p.lead{
+      margin:6px 0 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .card{
+      background:var(--card);
+      border-radius:10px;
+      box-shadow:0 6px 20px rgba(16,40,83,0.06);
+      padding:18px;
+      margin-bottom:18px;
+    }
+    .controls{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    label{
+      font-size:13px;
+      color:var(--muted);
+    }
+    input[type="number"]{
+      padding:8px 10px;
+      border-radius:8px;
+      border:1px solid #d7e6fb;
+      width:120px;
+      font-size:14px;
+    }
+    button{
+      padding:9px 14px;
+      border:0;
+      background:var(--accent);
+      color:white;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      box-shadow:0 6px 12px rgba(11,116,222,0.16);
+    }
+    button.ghost{
+      background:transparent;
+      border:1px solid #e6eefc;
+      color:var(--accent);
+      box-shadow:none;
+    }
+    #inputsArea{
+      margin-top:12px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .numInput{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      width:110px;
+    }
+    .numInput input{
+      width:100%;
+    }
+    .output-container{
+      position:relative;
+      background:linear-gradient(135deg, #1e293b 0%, #0f1724 100%);
+      border-radius:12px;
+      padding:20px;
+      box-shadow:0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+      border:1px solid rgba(255,255,255,0.1);
+      overflow:hidden;
+    }
+    .output-container::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:3px;
+      background:linear-gradient(90deg, #0b74de, #2ea44f, #0b74de);
+      background-size:200% 100%;
+      animation:shimmer 3s ease-in-out infinite;
+    }
+    @keyframes shimmer{
+      0%, 100%{ background-position:0% 50%; }
+      50%{ background-position:100% 50%; }
+    }
+    pre.output{
+      background:transparent;
+      color:#e2e8f0;
+      padding:0;
+      border-radius:0;
+      overflow:auto;
+      white-space:pre-wrap;
+      font-size:14px;
+      line-height:1.8;
+      font-family:'Consolas', 'Monaco', 'Courier New', monospace;
+      margin:0;
+      position:relative;
+      z-index:1;
+    }
+    pre.output .output-line{
+      display:block;
+      padding:4px 8px;
+      margin:2px 0;
+      border-radius:4px;
+      transition:all 0.2s ease;
+    }
+    pre.output .output-line:hover{
+      background:rgba(255,255,255,0.05);
+    }
+    pre.output .label{
+      color:#60a5fa;
+      font-weight:600;
+    }
+    pre.output .value{
+      color:#34d399;
+      font-weight:500;
+    }
+    pre.output .array{
+      color:#fbbf24;
+    }
+    pre.output .result{
+      color:#a78bfa;
+      font-weight:600;
+    }
+    pre.output .separator{
+      color:#64748b;
+      margin:8px 0;
+      display:block;
+    }
+    pre.output .comment{
+      color:#64748b;
+      font-style:italic;
+    }
+    footer{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:13px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    a.promo{
+      color:var(--accent);
+      font-weight:600;
+      text-decoration:none;
+    }
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Array Analyzer — Converted from C</h1>
+        <p class="lead">Enter array size and numbers, then compute maximum, minimum, digit-sums and difference.</p>
+      </div>
+      <div class="hint">Converted by CodingFleet Code Converter</div>
+    </header>
+
+    <div class="card">
+      <div class="controls">
+        <label for="count">Enter the number of elements in the array:</label>
+        <input id="count" type="number" min="1" placeholder="e.g., 5" />
+        <button id="createBtn">Create Inputs</button>
+        <button id="computeBtn" class="ghost">Compute</button>
+        <button id="resetBtn" class="ghost">Reset</button>
+      </div>
+
+      <div id="inputsArea" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 16px 0; display:flex; align-items:center; gap:8px;">
+        <span style="display:inline-block; width:4px; height:20px; background:linear-gradient(180deg, #0b74de, #2ea44f); border-radius:2px;"></span>
+        Program Output
+      </h3>
+      <div class="output-container">
+        <pre id="output" class="output"><span class="comment">// Output will appear here</span></pre>
+      </div>
+    </div>
+
+    <footer>
+      <div>Note: This replicates behavior of the original C program (including digit-sum logic).</div>
+      <div>
+        Try CodingFleet for more conversions — upgrade for more usage and advanced models:
+        <a class="promo" href="https://codingfleet.com/pricing/" target="_blank" rel="noopener">CodingFleet Pricing</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Get DOM elements
+    const countInput = document.getElementById('count');
+    const createBtn = document.getElementById('createBtn');
+    const computeBtn = document.getElementById('computeBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const inputsArea = document.getElementById('inputsArea');
+    const outputPre = document.getElementById('output');
+
+    // Helper: create number input fields
+    function createInputs(n) {
+      inputsArea.innerHTML = '';
+      for (let i = 0; i < n; i++) {
+        const wrap = document.createElement('div');
+        wrap.className = 'numInput';
+        const label = document.createElement('label');
+        label.textContent = 'Enter number:';
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.step = '1';
+        input.className = 'arrItem';
+        input.placeholder = `a[${i}]`;
+        wrap.appendChild(label);
+        wrap.appendChild(input);
+        inputsArea.appendChild(wrap);
+      }
+      // focus first input if present
+      const first = inputsArea.querySelector('input');
+      if (first) first.focus();
+    }
+
+    // Build comma-separated display array string like original printf
+    function formatArray(arr) {
+      if (arr.length === 0) return '';
+      return arr.join(',') + (arr.length ? ',' : '');
+    }
+
+    // Event: create inputs
+    createBtn.addEventListener('click', () => {
+      const n = parseInt(countInput.value, 10);
+      if (!n || n <= 0) {
+        alert('Please enter a valid positive integer for the number of elements.');
+        return;
+      }
+      if (n > 1000) {
+        // original C defined a[1000]; let's prevent creating more than 1000 inputs
+        if (!confirm('You entered more than 1000 elements. This UI will only allow up to 1000. Continue?')) {
+          return;
+        }
+      }
+      createInputs(Math.min(n, 1000));
+      outputPre.innerHTML = '<span class="comment">// Inputs created. Fill values and click Compute.</span>';
+    });
+
+    // Event: reset
+    resetBtn.addEventListener('click', () => {
+      countInput.value = '';
+      inputsArea.innerHTML = '';
+      outputPre.innerHTML = '<span class="comment">// Output will appear here</span>';
+    });
+
+    // Compute logic — faithfully translates the original C program logic
+    computeBtn.addEventListener('click', () => {
+      const itemEls = Array.from(document.querySelectorAll('.arrItem'));
+      if (itemEls.length === 0) {
+        alert('Create and fill input fields first (enter count and click Create Inputs).');
+        return;
+      }
+
+      // Read values as integers (like scanf("%d"))
+      const a = [];
+      for (let i = 0; i < itemEls.length; i++) {
+        const raw = itemEls[i].value;
+        if (raw === '') {
+          alert('Please fill all array elements with integer values.');
+          return;
+        }
+        const val = parseInt(raw, 10);
+        if (Number.isNaN(val)) {
+          alert('Please enter valid integers only.');
+          return;
+        }
+        a.push(val);
+      }
+
+      // Displaying the array
+      let outHTML = [];
+      outHTML.push('<span class="output-line"><span class="label">Here is your input:</span> <span class="array">' + formatArray(a) + '</span></span>');
+
+      // max && min initialization as in the C program
+      let max = a[0];
+      let min = a[0];
+
+      // Find max and min; also compute diff within the loop like in C
+      let diff = 0;
+      for (let i = 1; i < a.length; i++) {
+        if (a[i] > max) {
+          max = a[i];
+        } else {
+          if (a[i] < min) {
+            min = a[i];
+          }
+        }
+        diff = max - min; // updated each iteration (final effect is max-min)
+      }
+
+      // Display results for max/min (C printed these before digit-sum loops)
+      outHTML.push('<span class="output-line"><span class="label">Maximum value is:</span> <span class="value">' + max + '</span></span>');
+      outHTML.push('<span class="output-line"><span class="label">Minimum value is:</span> <span class="value">' + min + '</span></span>');
+
+      // Sum of digits of max (C code used while(max > 0) altering max)
+      // We'll replicate the same logic but avoid destroying the original values
+      let s = 0; // sum of digits of max
+      let tempMax = max;
+      // Note: original C used while(max > 0), so negative max or zero behave differently.
+      // We replicate that: only positive max will have digits summed.
+      while (tempMax > 0) {
+        const e = tempMax % 10;
+        s += e;
+        tempMax = Math.floor(tempMax / 10);
+      }
+
+      // Sum of digits of min — replicate original logic including special in-loop message
+      let sum = 0;
+      let tempMin = min;
+      let minSpecialMessage = null;
+      while (tempMin !== 0) {
+        const each = Math.abs(tempMin % 10); // keep digit positive when min negative behavior might appear
+        sum += each;
+        tempMin = (tempMin / 10) | 0; // integer division (toward 0)
+        // original C checked if(sum == 0) { printf("\nThe sum of minimum is 0"); } inside loop
+        // We'll replicate: if after adding digit sum remains zero, we record that message.
+        if (sum === 0) {
+          minSpecialMessage = 'The sum of minimum is 0';
+        }
+      }
+
+      // Print the sum outputs and difference
+      outHTML.push('<span class="separator">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>');
+      outHTML.push('<span class="output-line"><span class="label">Sum of maximum characters is:</span> <span class="result">' + s + '</span></span>');
+      outHTML.push('<span class="separator">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>');
+      outHTML.push('<span class="output-line"><span class="label">Sum of minimum characters is:</span> <span class="result">' + sum + '</span></span>');
+
+      if (minSpecialMessage) {
+        // original code printed this from inside the loop; display it as an additional line
+        outHTML.push('<span class="output-line"><span class="comment">' + minSpecialMessage + '</span></span>');
+      }
+
+      outHTML.push('<span class="separator">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>');
+      outHTML.push('<span class="output-line"><span class="label">Difference between maximum and minimum value is:</span> <span class="result">' + diff + '</span></span>');
+
+      // Final output shows exactly the ~same information as the original C program.
+      outputPre.innerHTML = outHTML.join('');
+    });
+
+    // Small convenience: allow pressing Enter in countInput to create inputs
+    countInput.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') {
+        createBtn.click();
+      }
+    });
+
+    // Accessibility: allow Enter on computeBtn if focus on compute button
+    computeBtn.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') {
+        computeBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>
